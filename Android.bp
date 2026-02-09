@@ -1,0 +1,88 @@
+// external/vsomeip/Android.bp
+// vsomeip SOME/IP implementation for AOSP (Phase 4)
+
+package {
+    default_applicable_licenses: ["external_vsomeip_license"],
+}
+
+license {
+    name: "external_vsomeip_license",
+    visibility: [":__subpackages__"],
+    license_kinds: [
+        "SPDX-license-identifier-MPL-2.0",
+    ],
+    license_text: [
+        "LICENSE",
+    ],
+}
+
+// vsomeip common settings
+cc_defaults {
+    name: "vsomeip_defaults",
+    cpp_std: "c++17",
+    cflags: [
+        "-DWITHOUT_SYSTEMD",
+        "-DVSOMEIP_VERSION=\"3.4.10\"",
+        "-DVSOMEIP_BASE_PATH=\"/tmp/vsomeip-\"",
+        "-Wno-unused-parameter",
+        "-Wno-unused-variable",
+        "-Wno-format",
+    ],
+    header_libs: [
+        "libboost_headers",
+    ],
+    export_include_dirs: ["interface"],
+    vendor_available: true,
+    product_available: true,
+}
+
+// TODO: Add vsomeip libraries after extracting sources from upstream
+
+/*
+// vsomeip core library
+cc_library_shared {
+    name: "libvsomeip3",
+    defaults: ["vsomeip_defaults"],
+    srcs: [
+        "implementation/runtime/src/*.cpp",
+        "implementation/message/src/*.cpp",
+        "implementation/endpoints/src/*.cpp",
+        "implementation/routing/src/*.cpp",
+        // ... more source files
+    ],
+    static_libs: [
+        "libboost_system",
+        "libboost_thread",
+        "libboost_filesystem",
+    ],
+    shared_libs: [
+        "liblog",
+    ],
+}
+
+// vsomeip configuration library
+cc_library_shared {
+    name: "libvsomeip3-cfg",
+    defaults: ["vsomeip_defaults"],
+    srcs: [
+        "implementation/configuration/src/*.cpp",
+    ],
+    shared_libs: [
+        "libvsomeip3",
+        "liblog",
+    ],
+}
+
+// vsomeip service discovery library
+cc_library_shared {
+    name: "libvsomeip3-sd",
+    defaults: ["vsomeip_defaults"],
+    srcs: [
+        "implementation/service_discovery/src/*.cpp",
+    ],
+    shared_libs: [
+        "libvsomeip3",
+        "liblog",
+    ],
+}
+*/
