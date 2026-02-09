@@ -1,76 +1,112 @@
-# vsomeip for AOSP
+### vsomeip
 
-Phase 4: SOME/IP integration
+##### Copyright
+Copyright (C) 2015-2022, Bayerische Motoren Werke Aktiengesellschaft (BMW AG)
 
-## Overview
+##### License
 
-This module provides vsomeip (SOME/IP implementation) for AOSP builds.
+This Source Code Form is subject to the terms of the Mozilla Public
+License, v. 2.0. If a copy of the MPL was not distributed with this
+file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-**Upstream**: https://github.com/COVESA/vsomeip
+##### vsomeip Overview
+----------------
+The vsomeip stack implements the http://some-ip.com/ (Scalable service-Oriented
+MiddlewarE over IP (SOME/IP)) protocol. The stack consists out of:
 
-## Libraries
+* a shared library for SOME/IP (`libvsomeip3.so`)
+* a shared library for SOME/IP's configuration module (`libvsomeip3-cfg.so`)
+* a shared library for SOME/IP's service discovery (`libvsomeip3-sd.so`)
+* a shared library for SOME/IP's E2E protection module (`libvsomeip3-e2e.so`)
 
-| Library | Description |
-|---------|-------------|
-| libvsomeip3.so | Core functionality (required) |
-| libvsomeip3-cfg.so | Configuration module (JSON) |
-| libvsomeip3-sd.so | Service Discovery |
-| libvsomeip3-e2e.so | End-to-End protection |
+Optional:
 
-## Dependencies
+* a shared library for compatibility with vsomeip v2 (`libvsomeip.so`)
 
-- Boost >= 1.66.0 (system, thread, filesystem)
-- C++17
+##### Build Instructions for Linux
 
-## Directory Structure
+###### Dependencies
 
-```
-external/vsomeip/
-├── Android.bp                    # Build configuration
-├── interface/vsomeip/            # Public headers
-└── implementation/
-    ├── configuration/
-    ├── endpoints/
-    ├── message/
-    ├── routing/
-    ├── runtime/
-    ├── service_discovery/
-    └── e2e_protection/
-```
+- A C++14 enabled compiler is needed (default for gcc >= v6.1).
+- vsomeip uses CMake as buildsystem.
+- vsomeip uses Boost >= 1.55.0:
+- Google's test framework (downloaded automaticaly)
 
-## Setup
+To build the documentation asciidoc, source-highlight, doxygen and graphviz is needed:
+--`sudo apt-get install asciidoc source-highlight doxygen graphviz`
 
-1. Clone vsomeip from https://github.com/COVESA/vsomeip
-2. Copy `interface/` and `implementation/` directories
-3. Build with AOSP
+###### Compilation
 
-## Build
+For compilation call:
 
 ```bash
-# In AOSP build environment
-m libvsomeip3
+mkdir build
+cd build
+cmake ..
+make
 ```
 
-## Configuration
-
-Configuration file: `/product/etc/vsomeip/vsomeip.json`
-
-Example:
-```json
-{
-    "unicast": "192.168.0.1",
-    "logging": {
-        "level": "debug",
-        "console": "true"
-    },
-    "applications": [
-        { "name": "service-sample", "id": "0x1277" }
-    ],
-    "routing": "service-sample"
-}
+To specify a installation directory (like `--prefix=` if you're used to autotools) call cmake like:
+```bash
+cmake -DCMAKE_INSTALL_PREFIX:PATH=$YOUR_PATH ..
+make
+make install
 ```
 
-## References
+###### Compilation with predefined unicast and/or diagnosis address
+To predefine the unicast address, call cmake like:
+```bash
+cmake -DUNICAST_ADDRESS=<YOUR IP ADDRESS> ..
+```
 
-- [vsomeip GitHub](https://github.com/COVESA/vsomeip)
-- [SOME/IP Protocol Specification](https://www.autosar.org/standards/foundation)
+To predefine the diagnosis address, call cmake like:
+```bash
+cmake -DDIAGNOSIS_ADDRESS=<YOUR DIAGNOSIS ADDRESS> ..
+```
+The diagnosis address is a single byte value.
+
+###### Compilation with custom default configuration folder
+To change the default configuration folder, call cmake like:
+```bash
+cmake -DDEFAULT_CONFIGURATION_FOLDER=<DEFAULT CONFIGURATION FOLDER> ..
+```
+The default configuration folder is /etc/vsomeip.
+
+###### Compilation with custom default configuration file
+To change the default configuration file, call cmake like:
+```bash
+cmake -DDEFAULT_CONFIGURATION_FILE=<DEFAULT CONFIGURATION FILE> ..
+```
+The default configuration file is /etc/vsomeip.json.
+
+###### Compilation with signal handling
+
+To compile vsomeip with signal handling (SIGINT/SIGTERM) enabled, call cmake like:
+```bash
+cmake -DENABLE_SIGNAL_HANDLING=1 ..
+```
+In the default setting, the application has to take care of shutting down vsomeip in case these signals are received.
+
+
+##### Build Instructions for Android
+
+###### Dependencies
+
+- vsomeip uses Boost >= 1.55. The boost libraries (system, thread and log) must be included in the Android source tree and integrated into the build process with an appropriate Android.bp file.
+
+###### Compilation
+
+In general for building the Android source tree the instructions found on the pages from the Android Open Source Project (AOSP) apply (https://source.android.com/setup/build/requirements).
+
+To integrate the vsomeip library into the build process, the source code together with the Android.bp file has to be inserted into the Android source tree (by simply copying or by fetching with a custom platform manifest).
+When building the Android source tree, the Android.bp file is automatically found and considered by the build system.
+
+In order that the vsomeip library is also included in the Android image, the library has to be added to the PRODUCT_PACKAGES variable in one of a device/target specific makefile:
+
+```
+PRODUCT_PACKAGES += \
+    libvsomeip \
+    libvsomeip_cfg \
+    libvsomeip_sd \
+    libvsomeip_e2e \
+```

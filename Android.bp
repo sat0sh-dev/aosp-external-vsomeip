@@ -1,5 +1,6 @@
 // external/vsomeip/Android.bp
-// vsomeip SOME/IP implementation for AOSP (Phase 4)
+// vsomeip - SOME/IP implementation for AOSP (Phase 4)
+// Original: COVESA/vsomeip 3.4.10
 
 package {
     default_applicable_licenses: ["external_vsomeip_license"],
@@ -16,73 +17,224 @@ license {
     ],
 }
 
-// vsomeip common settings
+libvsomeip_srcs = [
+   "implementation/endpoints/**/*.cpp",
+   "implementation/logger/**/*.cpp",
+   "implementation/tracing/**/*.cpp",
+   "implementation/message/**/*.cpp",
+   "implementation/routing/**/*.cpp",
+   "implementation/runtime/**/*.cpp",
+   "implementation/utility/**/*.cpp",
+   "implementation/plugin/**/*.cpp",
+   "implementation/protocol/**/*.cpp",
+   "implementation/security/**/*.cpp",
+]
+
+libvsomeip_compat_srcs = [
+    "implementation/compat/message/src/*.cpp",
+    "implementation/compat/runtime/src/*.cpp",
+]
+
+libvsomeip_cfg_srcs = [
+    "implementation/configuration/src/*.cpp",
+]
+
+libvsomeip_e2e_srcs = [
+    "implementation/e2e_protection/src/*.cpp",
+]
+
+libvsomeip_sd_srcs = [
+    "implementation/service_discovery/src/*.cpp",
+]
+
 cc_defaults {
     name: "vsomeip_defaults",
-    cpp_std: "c++17",
-    cflags: [
-        "-DWITHOUT_SYSTEMD",
-        "-DVSOMEIP_VERSION=\"3.4.10\"",
-        "-DVSOMEIP_BASE_PATH=\"/tmp/vsomeip-\"",
+
+    cppflags: [
+        "-std=c++17",
+        "-fexceptions",
+        "-Wno-non-virtual-dtor",
+        "-Wno-unused-const-variable",
         "-Wno-unused-parameter",
+        "-Wno-unused-private-field",
+        "-Wno-unused-lambda-capture",
         "-Wno-unused-variable",
+        "-Wno-unused-local-typedef",
+        "-Wno-sign-compare",
         "-Wno-format",
+        "-Wno-header-guard",
+        "-Wno-overloaded-virtual",
+        "-Wno-implicit-fallthrough",
+        "-Wno-error",
+        "-Wno-shorten-64-to-32",
+        "-D_GTHREAD_USE_MUTEX_INIT_FUNC",
+        "-D_GTHREAD_USE_RECURSIVE_MUTEX_INIT_FUNC",
     ],
-    header_libs: [
-        "libboost_headers",
-    ],
-    export_include_dirs: ["interface"],
+
+    // Support both vendor and product partitions
     vendor_available: true,
     product_available: true,
 }
 
-// TODO: Add vsomeip libraries after extracting sources from upstream
+cc_defaults {
+    name: "vsomeip_lib_defaults",
 
-/*
-// vsomeip core library
+    cflags: [
+        "-DVSOMEIP_BOOST_VERSION=108400",
+        "-DVSOMEIP_INTERNAL_SUPPRESS_DEPRECATED",
+    ],
+
+    local_include_dirs: [
+        "interface",
+        "implementation/helper"
+    ],
+}
+
 cc_library_shared {
     name: "libvsomeip3",
-    defaults: ["vsomeip_defaults"],
-    srcs: [
-        "implementation/runtime/src/*.cpp",
-        "implementation/message/src/*.cpp",
-        "implementation/endpoints/src/*.cpp",
-        "implementation/routing/src/*.cpp",
-        // ... more source files
+
+    srcs: libvsomeip_srcs,
+
+    defaults: [
+        "vsomeip_defaults",
+        "vsomeip_lib_defaults"
     ],
+
+    cflags: [
+        "-DWITHOUT_SYSTEMD",
+        "-DVSOMEIP_VERSION=\"3.4.10\"",
+        "-DVSOMEIP_COMPAT_VERSION=\"3.4.10\"",
+        // Use product partition path
+        "-DVSOMEIP_BASE_PATH=\"/product/run/someip/\"",
+        // Disable DLT for simplicity
+        // "-DUSE_DLT",
+    ],
+
+    ldflags: [
+        "-Wl,-wrap,socket",
+        "-Wl,-wrap,accept",
+        "-Wl,-wrap,open"
+    ],
+
+    rtti: true,
+
+    export_include_dirs: [
+        "interface"
+    ],
+
     static_libs: [
         "libboost_system",
         "libboost_thread",
         "libboost_filesystem",
     ],
+
+    header_libs: [
+        "libboost_headers",
+    ],
+
     shared_libs: [
         "liblog",
     ],
 }
 
-// vsomeip configuration library
 cc_library_shared {
     name: "libvsomeip3-cfg",
-    defaults: ["vsomeip_defaults"],
-    srcs: [
-        "implementation/configuration/src/*.cpp",
+
+    srcs: libvsomeip_cfg_srcs,
+
+    defaults: [
+        "vsomeip_defaults",
+        "vsomeip_lib_defaults"
     ],
+
+    rtti: true,
+
     shared_libs: [
         "libvsomeip3",
-        "liblog",
+    ],
+
+    static_libs: [
+        "libboost_system",
+        "libboost_filesystem",
+    ],
+
+    header_libs: [
+        "libboost_headers",
     ],
 }
 
-// vsomeip service discovery library
 cc_library_shared {
-    name: "libvsomeip3-sd",
-    defaults: ["vsomeip_defaults"],
-    srcs: [
-        "implementation/service_discovery/src/*.cpp",
+    name: "libvsomeip3-e2e",
+
+    srcs: libvsomeip_e2e_srcs,
+
+    defaults: [
+        "vsomeip_defaults",
+        "vsomeip_lib_defaults"
     ],
+
+    rtti: true,
+
     shared_libs: [
-        "libvsomeip3",
-        "liblog",
+       "libvsomeip3"
+    ],
+
+    header_libs: [
+        "libboost_headers",
     ],
 }
-*/
+
+cc_library_shared {
+    name: "libvsomeip3-sd",
+
+    srcs: libvsomeip_sd_srcs,
+
+    defaults: [
+        "vsomeip_defaults",
+        "vsomeip_lib_defaults"
+    ],
+
+    rtti: true,
+
+    shared_libs: [
+        "libvsomeip3",
+    ],
+
+    static_libs: [
+        "libboost_system",
+    ],
+
+    header_libs: [
+        "libboost_headers",
+    ],
+}
+
+// Compatibility layer (vsomeip2 API)
+cc_library_shared {
+    name: "libvsomeip",
+
+    srcs: libvsomeip_compat_srcs,
+
+    defaults: [
+        "vsomeip_defaults",
+        "vsomeip_lib_defaults"
+    ],
+
+    rtti: true,
+
+    export_include_dirs: [
+        "interface"
+    ],
+
+    shared_libs: [
+        "libvsomeip3",
+    ],
+
+    static_libs: [
+        "libboost_system",
+    ],
+
+    header_libs: [
+        "libboost_headers",
+    ],
+}
