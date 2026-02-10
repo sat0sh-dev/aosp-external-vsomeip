@@ -19,16 +19,9 @@
 #include "../../utility/include/byteorder.hpp"
 
 #ifdef ANDROID
-#include <utils/Log.h>
+#include <android/log.h>
 
-#ifdef ALOGI
-#undef ALOGI
-#endif
-
-#define ALOGI(LOG_TAG, ...) ((void)ALOG(LOG_INFO, LOG_TAG, __VA_ARGS__))
-#ifndef LOGE
-#define LOGI ALOGI
-#endif
+#define ALOGI(LOG_TAG, ...) __android_log_print(ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__)
 
 #endif
 

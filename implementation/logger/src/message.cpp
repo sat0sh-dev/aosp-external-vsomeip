@@ -10,52 +10,13 @@
 #include <iostream>
 
 #ifdef ANDROID
-#include <utils/Log.h>
+#include <android/log.h>
 
-#ifdef ALOGE
-#undef ALOGE
-#endif
-
-#define ALOGE(LOG_TAG, ...) ((void)ALOG(LOG_ERROR, LOG_TAG, __VA_ARGS__))
-#ifndef LOGE
-#define LOGE ALOGE
-#endif
-
-#ifdef ALOGW
-#undef ALOGW
-#endif
-
-#define ALOGW(LOG_TAG, ...) ((void)ALOG(LOG_WARN, LOG_TAG, __VA_ARGS__))
-#ifndef LOGE
-#define LOGW ALOGW
-#endif
-
-#ifdef ALOGI
-#undef ALOGI
-#endif
-
-#define ALOGI(LOG_TAG, ...) ((void)ALOG(LOG_INFO, LOG_TAG, __VA_ARGS__))
-#ifndef LOGE
-#define LOGI ALOGI
-#endif
-
-#ifdef ALOGD
-#undef ALOGD
-#endif
-
-#define ALOGD(LOG_TAG, ...) ((void)ALOG(LOG_DEBUG, LOG_TAG, __VA_ARGS__))
-#ifndef LOGE
-#define LOGD ALOGD
-#endif
-
-#ifdef ALOGV
-#undef ALOGV
-#endif
-
-#define ALOGV(LOG_TAG, ...) ((void)ALOG(LOG_VERBOSE, LOG_TAG, __VA_ARGS__))
-#ifndef LOGE
-#define LOGV ALOGV
-#endif
+#define ALOGE(LOG_TAG, ...) __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
+#define ALOGW(LOG_TAG, ...) __android_log_print(ANDROID_LOG_WARN, LOG_TAG, __VA_ARGS__)
+#define ALOGI(LOG_TAG, ...) __android_log_print(ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__)
+#define ALOGD(LOG_TAG, ...) __android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, __VA_ARGS__)
+#define ALOGV(LOG_TAG, ...) __android_log_print(ANDROID_LOG_VERBOSE, LOG_TAG, __VA_ARGS__)
 
 #endif
 
