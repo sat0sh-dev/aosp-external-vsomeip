@@ -104,8 +104,8 @@ cc_library_shared {
         "-DWITHOUT_SYSTEMD",
         "-DVSOMEIP_VERSION=\"3.4.10\"",
         "-DVSOMEIP_COMPAT_VERSION=\"3.4.10\"",
-        // Use product partition path
-        "-DVSOMEIP_BASE_PATH=\"/product/run/someip/\"",
+        // Use /data/misc/ path for product policy SELinux compatibility
+        "-DVSOMEIP_BASE_PATH=\"/data/misc/vsomeip/\"",
         // Disable DLT for simplicity
         // "-DUSE_DLT",
     ],
